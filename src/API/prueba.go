@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -12,8 +13,8 @@ import (
 )
 
 type Post struct {
-	ID     string `json:"id"`
-	Nombre string `json:"nombre"`
+	ID        string `json:"id"`
+	Nombre    string `json:"nombre"`
 	Apellidos string `json:"apellido"`
 }
 
@@ -56,17 +57,34 @@ func getPosts(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(posts)
 }
 
-func setupResponse(w *http.ResponseWriter, req *http.Request) {
+/*func setupResponse(w *http.ResponseWriter, req *http.Request) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
-    (*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-    (*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+}*/
+func Insert(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+
+	if r.Method == "POST" {
+		name := r.FormValue("nombre")
+		city := r.FormValue("apellido")
+		insForm, err := db.Prepare("INSERT INTO clientes(nombre, apellido) VALUES(?,?)")
+		if err != nil {
+			panic(err.Error())
+		}
+		insForm.Exec(name, city)
+		log.Println("INSERT: Name: " + name + " | City: " + city)
+	}
+
 }
 
 func createPost(w http.ResponseWriter, r *http.Request) {
-	setupResponse(&w, r)
-	if (*r).Method == "OPTIONS" {
-		return
-	}
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+
 	stmt, err := db.Prepare("INSERT INTO clientes(nombre,apellido) VALUES(?,?)")
 	if err != nil {
 		panic(err.Error())
@@ -84,6 +102,7 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 	fmt.Fprintf(w, "New post was created")
+	log.Println("INSERT: Name: " + title + " | City: " + apellido)
 }
 
 func getPost(w http.ResponseWriter, r *http.Request) {

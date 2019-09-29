@@ -13,6 +13,10 @@ export default function App() {
   )
 
   useEffect(() => {
+    fetchUsers()
+  }, [])
+
+  const fetchUsers = () => {
     axios.get('http://localhost:8000/posts')
       .then(response => {
         console.log(response.data);
@@ -21,7 +25,7 @@ export default function App() {
       .catch(error => {
         console.log(error);
       });
-  }, [])
+  }
 
   const [name, setName] = useState("")
   const [surname, setSurname] = useState("")
@@ -35,18 +39,27 @@ export default function App() {
   }
 
   function handleSubmit() {
-    const values = {
+    const values = JSON.stringify({
       "nombre": name,
-      "apellidos": surname,
-    }
+      "apellido": surname
+    })
 
-    axios.post('http://localhost:8000/posts', values)
-      .then(response => {
-        console.log(response.data);
-      })
-      .catch(error => {
-        console.log(error);
-      });
+    console.log(values)
+
+    axios({
+      method: 'post',
+      url: 'http://localhost:8000/posts',
+      data: values,
+      headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+      },
+  }).then(function (response) {
+      console.log(response);
+      fetchUsers()
+
+  }).catch(function (error) {
+      console.log(error);
+  });
   }
 
   return (
