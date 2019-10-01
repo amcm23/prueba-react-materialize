@@ -76,7 +76,7 @@ func deletePost(w http.ResponseWriter, r *http.Request) {
 	//w.Header().Set("Access-Control-Allow-Origin", "*")
 	//w.Header().Set("Access-Control-Allow-Methods", "GET,OPTIONS,POST,DELETE")
 	//w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-
+	/*log.Println("DELETE: " + id)
 	params := mux.Vars(r)
 	stmt, err := db.Prepare("DELETE FROM clientes WHERE id = ?")
 	if err != nil {
@@ -86,7 +86,20 @@ func deletePost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err.Error())
 	}
-	fmt.Fprintf(w, "Post with ID = %s was deleted", params["id"])
+	fmt.Fprintf(w, "Post with ID = %s was deleted", params["id"])*/
+	id := chi.URLParam(r, "id")
+
+	query, err := db.Prepare("delete from clientes where id=?")
+	catch(err)
+	_, er := query.Exec(id)
+	catch(er)
+	query.Close()
+}
+
+func catch(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
 
 func getPosts(w http.ResponseWriter, r *http.Request) {
