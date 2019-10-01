@@ -91,10 +91,8 @@ export default function App() {
           data: null,
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Headers': '*',
-            'Access-Control-Allow-Methods': 'OPTIONS, POST, DELETE'
-          },
+            'Accept': 'application/json'
+          }
         }).then(response => {
           console.log(response.data);
           Swal.fire(
