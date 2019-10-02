@@ -28,6 +28,21 @@ type Factura struct {
 	Fecha   string `json:"fecha"`
 }
 
+type Detalle struct {
+	ID       string `json:"num_detalle"`
+	Factura  string `json:"id_factura"`
+	Producto string `json:"id_producto"`
+	Cantidad string `json:"cantidad"`
+	Precio   string `json:"precio"`
+}
+
+type Producto struct {
+	ID     string `json:"num_factura"`
+	Nombre string `json:"nombre"`
+	Precio string `json:"precio"`
+	Stock  string `json:"stock"`
+}
+
 var db *sql.DB
 var err error
 
@@ -80,6 +95,14 @@ func main() {
 	r.Get("/facturas", getFacturas)
 	r.Delete("/facturas/{num_factura}", deleteFactura)
 	r.Post("/facturas", createFactura)
+
+	r.Get("/detalles", getDetalles)
+	r.Delete("/detalles/{num_detalle}", deleteDetalle)
+	r.Post("/detalles", createDetalle)
+
+	r.Get("/productos", getProductos)
+	r.Delete("/productos/{id_producto}", deleteProducto)
+	r.Post("/productos", createProducto)
 
 	http.ListenAndServe(":8000", r)
 }
@@ -271,6 +294,113 @@ func createFactura(w http.ResponseWriter, r *http.Request) {
 	id_cliente := keyVal["id_cliente"]
 	fecha := keyVal["fecha"]
 	_, err = stmt.Exec(id_cliente, fecha)
+	if err != nil {
+		panic(err.Error())
+	}
+	fmt.Fprintf(w, "New post was created")
+}
+
+func deleteDetalle(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "num_detalle")
+
+	query, err := db.Prepare("delete from detalles where num_detalle=?")
+	catch(err)
+	_, er := query.Exec(id)
+	catch(er)
+	query.Close()
+}
+
+func getDetalles(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Content-Type", "application/json")
+	var detalles []Detalle
+	result, err := db.Query("SELECT * from detalles")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer result.Close()
+	for result.Next() {
+		var detalle Detalle
+		err := result.Scan(&detalle.ID, &detalle.Factura, &detalle.Producto, &detalle.Cantidad, &detalle.Precio)
+		if err != nil {
+			panic(err.Error())
+		}
+		detalles = append(detalles, detalle)
+	}
+	json.NewEncoder(w).Encode(detalles)
+}
+
+func createDetalle(w http.ResponseWriter, r *http.Request) {
+	stmt, err := db.Prepare("INSERT INTO detalles(id_factura,id_producto,cantidad,precio) VALUES(?,?,?,?)")
+	if err != nil {
+		panic(err.Error())
+	}
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err.Error())
+	}
+	keyVal := make(map[string]string)
+	json.Unmarshal(body, &keyVal)
+	//num_factura := keyVal["num_factura"]
+	id_factura := keyVal["id_factura"]
+	id_producto := keyVal["id_producto"]
+	cantidad := keyVal["cantidad"]
+	precio := keyVal["precio"]
+	_, err = stmt.Exec(id_factura, id_producto, cantidad, precio)
+	if err != nil {
+		panic(err.Error())
+	}
+	fmt.Fprintf(w, "New post was created")
+}
+
+func deleteProducto(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id_producto")
+
+	query, err := db.Prepare("delete from productos where id_producto=?")
+	catch(err)
+	_, er := query.Exec(id)
+	catch(er)
+	query.Close()
+}
+
+func getProductos(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Content-Type", "application/json")
+	var productos []Producto
+	result, err := db.Query("SELECT * from productos")
+	if err != nil {
+		panic(err.Error())
+	}
+	defer result.Close()
+	for result.Next() {
+		var producto Producto
+		err := result.Scan(&producto.ID, &producto.Nombre, &producto.Precio, &producto.Stock)
+		if err != nil {
+			panic(err.Error())
+		}
+		productos = append(productos, producto)
+	}
+	json.NewEncoder(w).Encode(productos)
+}
+
+func createProducto(w http.ResponseWriter, r *http.Request) {
+	stmt, err := db.Prepare("INSERT INTO productos(nombre,precio,stock) VALUES(?,?,?)")
+	if err != nil {
+		panic(err.Error())
+	}
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err.Error())
+	}
+	keyVal := make(map[string]string)
+	json.Unmarshal(body, &keyVal)
+	//num_factura := keyVal["num_factura"]
+	nombre := keyVal["nombre"]
+	precio := keyVal["precio"]
+	stock := keyVal["stock"]
+	_, err = stmt.Exec(nombre, precio, stock)
 	if err != nil {
 		panic(err.Error())
 	}
