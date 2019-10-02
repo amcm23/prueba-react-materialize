@@ -56,7 +56,6 @@ export default function App() {
       },
     }).then(function (response) {
       console.log(response);
-      fetchUsers()
       Swal.fire(({
         position: 'top',
         type: 'success',
@@ -64,6 +63,8 @@ export default function App() {
         showConfirmButton: false,
         timer: 1500
       }))
+      fetchUsers()
+      
       setName("")
       setSurname("")
 

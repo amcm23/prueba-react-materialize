@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"github.com/gorilla/handlers"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -32,8 +33,12 @@ func main() {
 	router.HandleFunc("/posts", createPost).Methods("POST")
 	router.HandleFunc("/posts/{id}", getPost).Methods("GET")
 	router.HandleFunc("/posts/{id}", updatePost).Methods("PUT")
-	router.HandleFunc("/posts/{id}", deletePost).Methods("DELETE")
-	http.ListenAndServe(":8000", router)
+	router.HandleFunc("/posts/{id}", deletePost).Methods("DELETE","OPTIONS")
+	http.ListenAndServe(":3050", handlers.CORS(
+		handlers.AllowedHeaders([]string{"content-type"}),
+		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowCredentials(),
+	)(router))
 }
 
 func getPosts(w http.ResponseWriter, r *http.Request) {
